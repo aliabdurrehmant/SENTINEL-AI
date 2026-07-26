@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // This is the real system prompt driving Sentinel AI's phishing/threat
-// detection feature. It is sent to the Gemini API along with the email
+// detection feature. It is sent to the Groq API along with the email
 // the user submits for scanning.
 const SYSTEM_PROMPT = `You are Sentinel AI, an email security analyst engine. You are given metadata and content from a single email. Your job is to determine whether it is a phishing attempt, a scam, or safe/legitimate email, and explain why.
 
@@ -30,10 +30,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
-        { error: "Server is missing GEMINI_API_KEY environment variable." },
+        { error: "Server is missing GROQ_API_KEY environment variable." },
         { status: 500 }
       );
     }
@@ -44,40 +44,37 @@ Links found in email: ${links && links.length ? links.join(", ") : "none"}
 Body content:
 ${content || "(no body content provided)"}`;
 
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    const groqRes = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
         body: JSON.stringify({
-          system_instruction: {
-            parts: [{ text: SYSTEM_PROMPT }],
-          },
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: userPrompt }],
-            },
+          model: "llama-3.3-70b-versatile",
+          temperature: 0.2,
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: userPrompt },
           ],
-          generationConfig: {
-            temperature: 0.2,
-            responseMimeType: "application/json",
-          },
         }),
       }
     );
 
-    if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
+    if (!groqRes.ok) {
+      const errText = await groqRes.text();
       return NextResponse.json(
         { error: `AI provider error: ${errText}` },
         { status: 502 }
       );
     }
 
-    const geminiData = await geminiRes.json();
+    const groqData = await groqRes.json();
     const rawText: string | undefined =
-      geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+      groqData?.choices?.[0]?.message?.content;
 
     if (!rawText) {
       return NextResponse.json(
@@ -115,3 +112,4 @@ ${content || "(no body content provided)"}`;
     );
   }
 }
+
