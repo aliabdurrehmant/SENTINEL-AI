@@ -11,6 +11,8 @@ import CyberButton from "@/components/ui/CyberButton";
 import ShieldCanvas from "@/components/three/ShieldCanvas";
 import { parseManualEmail } from "@/lib/services/gmail";
 import { analyzeEmail } from "@/lib/services/ai";
+import { saveScanResult } from "@/lib/services/firestore";
+import { auth } from "@/firebase";
 
 export default function ScanPage() {
   const router = useRouter();
@@ -32,6 +34,17 @@ export default function ScanPage() {
     try {
       const email = parseManualEmail({ sender, subject, content });
       const result = await analyzeEmail(email);
+
+      // Persist this scan to Firestore under the logged-in user, if signed in.
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          await saveScanResult(currentUser.uid, result);
+        } catch (persistErr) {
+          // Don't block the user from seeing their result if saving fails.
+          console.error("Failed to save scan to history:", persistErr);
+        }
+      }
 
       // Store the real result so the Analysis page can render it.
       sessionStorage.setItem("sentinel_last_scan", JSON.stringify(result));

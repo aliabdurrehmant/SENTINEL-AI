@@ -1,35 +1,62 @@
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  Timestamp,
+} from "firebase/firestore";
+import { db } from "@/firebase";
 import { AIThreatAnalysis } from "./ai";
 
-export interface SecurityScanLog {
+export interface ScanRecord extends AIThreatAnalysis {
   id: string;
   userId: string;
-  timestamp: string;
-  scannedCount: number;
-  threatsFound: number;
-  status: "CLEAN" | "ACTION TAKEN" | "NEUTRALIZED";
+  createdAt: string;
 }
 
-export async function saveScanResultMock(analysis: AIThreatAnalysis): Promise<string> {
-  return "doc_id_" + Math.random().toString(36).substring(2, 9);
+// Saves a real scan result to Firestore under the current user's account.
+export async function saveScanResult(
+  userId: string,
+  analysis: AIThreatAnalysis
+): Promise<string> {
+  const docRef = await addDoc(collection(db, "scans"), {
+    ...analysis,
+    userId,
+    createdAt: Timestamp.now(),
+  });
+  return docRef.id;
 }
 
-export async function fetchScanLogsMock(): Promise<SecurityScanLog[]> {
-  return [
-    {
-      id: "log-1",
-      userId: "usr_984221",
-      timestamp: "2024-10-24T10:00:00Z",
-      scannedCount: 150,
-      threatsFound: 0,
-      status: "CLEAN",
-    },
-    {
-      id: "log-2",
-      userId: "usr_984221",
-      timestamp: "2024-10-23T14:30:00Z",
-      scannedCount: 312,
-      threatsFound: 2,
-      status: "ACTION TAKEN",
-    },
-  ];
+// Fetches this user's real scan history, most recent first.
+export async function fetchUserScans(userId: string): Promise<ScanRecord[]> {
+  const q = query(
+    collection(db, "scans"),
+    where("userId", "==", userId),
+    orderBy("createdAt", "desc")
+  );
+
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      userId: data.userId,
+      messageId: data.messageId,
+      sender: data.sender,
+      subject: data.subject,
+      threatLevel: data.threatLevel,
+      riskScore: data.riskScore,
+      confidenceScore: data.confidenceScore,
+      threatCategory: data.threatCategory,
+      explanation: data.explanation,
+      simplifiedExplanation: data.simplifiedExplanation,
+      redFlags: data.redFlags || [],
+      createdAt: data.createdAt?.toDate
+        ? data.createdAt.toDate().toISOString()
+        : new Date().toISOString(),
+    };
+  });
 }
