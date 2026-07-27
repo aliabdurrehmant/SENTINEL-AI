@@ -36,7 +36,8 @@ Sentinel AI puts that same kind of threat analysis in the hands of everyday peop
 - **Plain-Language Explanations** — a "translate this for a non-technical person" breakdown of *why* an email is dangerous, not just a score
 - **Red Flags Checklist** — specific indicators the AI found (spoofed domains, urgency tactics, suspicious links, credential requests, etc.)
 - **Threat Classification** — categorizes attacks (e.g. Credential Theft, Invoice Scam, Legitimate Email)
-- **Dashboard, History, and Report views** — UI for reviewing past scans and overall inbox health
+- **Real Scan History** — every scan is saved to Firestore and shown on the History page, tied to your account
+- **Dashboard and Report views** — UI for reviewing overall inbox health
 
 ## The AI Feature
 
@@ -107,18 +108,19 @@ The AI API call happens server-side (inside the Next.js API route) rather than d
 - **Styling**: Tailwind CSS
 - **3D/Visuals**: Three.js
 - **Authentication**: Firebase Authentication (Google OAuth)
+- **Database**: Cloud Firestore — persists every scan result per-user
 - **AI Model**: Groq API — `llama-3.3-70b-versatile`
 - **Hosting**: Vercel
 - **Version Control**: Git + GitHub
 
 ## Screenshots
 
+> _Add at least 3 screenshots here: the landing page, the scan form, and the analysis results page._
+
 ![Landing Page](./screenshots/landing.png)
-![Login Page](./screenshots/login.png)
-![Google OAuth Sign-In](./screenshots/login_google_popup.png)
 ![Scan Page](./screenshots/scan.png)
 ![Analysis Results](./screenshots/analysis.png)
-![Simplified AI Summary Modal](./screenshots/simplified_summary.png)
+![Scan History](./screenshots/history.png)
 
 ## How to Run Locally
 
@@ -142,7 +144,7 @@ The AI API call happens server-side (inside the Next.js API route) rather than d
    ```
    GROQ_API_KEY=your_groq_api_key_here
    ```
-   Get a free Groq API key at [consolegroq.com](https://console.groq.com) (no credit card required).
+   Get a free Groq API key at [console.groq.com](https://console.groq.com) (no credit card required).
 
 5. Run the development server:
    ```bash
@@ -191,7 +193,8 @@ In the interest of being transparent about exactly what's real in this build:
 
 - **The core AI scanning loop is fully real and functional end-to-end**: the Scan page → AI analysis (Groq) → Analysis results page all use live data and a real model call, no mocked responses.
 - **Manual scanning, not live Gmail integration**: users paste in email content rather than Sentinel AI reading their inbox automatically. This was a deliberate choice — full Gmail API (OAuth `gmail.readonly` scope) integration requires Google's app verification process for production use with arbitrary accounts, which takes days to weeks and wasn't feasible within this project's timeline. This is called out explicitly as a next step below.
-- **Dashboard, History, and Report pages are illustrative UI** showing example/sample data rather than pulling from a persisted database — scan results are currently only held in the browser's session for the single scan just performed. Persisting real scan history (via Firestore, which is already partially scaffolded in `lib/services/firestore.ts`) is the next logical step.
+- **Real scan history**: every scan is saved to Cloud Firestore under the logged-in user's account (`lib/services/firestore.ts`), and the **History / Security Logs page pulls and displays real past scans** — not sample data.
+- **Dashboard and Report pages are still illustrative UI** showing example data rather than aggregating the user's real Firestore scan history. Computing real stats (total scans, threat rate, most common category) from the same Firestore data that now powers History is the direct next step.
 
 ## Future Improvements
 
