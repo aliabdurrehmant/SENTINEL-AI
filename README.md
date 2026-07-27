@@ -28,6 +28,12 @@ Sentinel AI puts that same kind of threat analysis in the hands of everyday peop
 
 🔗 **[https://sentinel-ai-roan.vercel.app](https://sentinel-ai-roan.vercel.app)**
 
+
+
+https://github.com/user-attachments/assets/f9a23620-b1d3-457a-b568-915952c90b78
+
+
+
 ## Features
 
 - **Google Sign-In** — secure authentication via Firebase Auth
