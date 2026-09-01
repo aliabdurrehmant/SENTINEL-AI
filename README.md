@@ -96,7 +96,7 @@ app/api/analyze/route.ts  (server-side, Next.js API route)
         │  calls Groq API with system prompt + email content
         │  API key never exposed to the browser
         ▼
-Groq API (llama-3.3-70b-versatile) returns structured JSON verdict
+Groq API (openai/gpt-oss-120b) returns structured JSON verdict
         │
         ▼
 Result stored in sessionStorage → redirect to /analysis
