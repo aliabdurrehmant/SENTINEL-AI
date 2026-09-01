@@ -47,7 +47,7 @@ https://github.com/user-attachments/assets/f9a23620-b1d3-457a-b568-915952c90b78
 
 ## The AI Feature
 
-The core of Sentinel AI is a real-time call to an LLM (Groq's `llama-3.3-70b-versatile`) via a server-side API route (`/api/analyze`), driven by a system prompt I wrote specifically for phishing/threat detection:
+The core of Sentinel AI is a real-time call to an LLM (Groq's `openai/gpt-oss-120b`) via a server-side API route (`/api/analyze`), driven by a system prompt I wrote specifically for phishing/threat detection:
 
 ```
 You are Sentinel AI, an email security analyst engine. You are given metadata and
@@ -115,7 +115,7 @@ The AI API call happens server-side (inside the Next.js API route) rather than d
 - **3D/Visuals**: Three.js
 - **Authentication**: Firebase Authentication (Google OAuth)
 - **Database**: Cloud Firestore — persists every scan result per-user
-- **AI Model**: Groq API — `llama-3.3-70b-versatile`
+- **AI Model**: Groq API — `openai/gpt-oss-120b`
 - **Hosting**: Vercel
 - **Version Control**: Git + GitHub
 
